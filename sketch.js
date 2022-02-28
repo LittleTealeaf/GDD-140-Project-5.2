@@ -1,10 +1,19 @@
 /// <reference path="./libraries/p5.global-mode.d.ts" />
 
+/**
+ * Initial random chance for each square
+ */
 const randomChance = 0.5;
+/**
+ * Tick-rate of the render
+ */
 const tickRate = 30;
+/**
+ * Size, in pixels, of each square
+ */
+const size = 15;
 
 var cols = 0;
-var size = 15;
 var rows = 0;
 var board;
 
@@ -23,21 +32,20 @@ function setup() {
 }
 
 function draw() {
-  background(220);
+  background(0);
   renderBoard();
   updateBoard();
   frameRate(tickRate);
 }
 
 function renderBoard() {
+  fill('white');
   for(var x = 0; x < cols; x++) {
     for(var y = 0; y < rows; y++) {
       if(board[y][x]) {
-        fill('white');
-      } else {
-        fill('black');
+        rect(x * size,y * size,size,size);
       }
-      rect(x * size,y * size,size,size);
+      
     }
   }
 }
