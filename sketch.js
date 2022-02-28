@@ -1,20 +1,18 @@
 /// <reference path="./libraries/p5.global-mode.d.ts" />
 
-const maxSize = 10;
 const randomChance = 0.5;
 const tickRate = 60;
 
 var cols = 0;
-var size = 0;
+var size = 15;
 var rows = 0;
 var board;
 
 function setup() {
   createCanvas(windowWidth, windowHeight);
-  
-  cols = int(Math.min(width,height) / maxSize);
-  size = Math.min(width,height) / cols;
-  rows = int(height / size);
+
+  cols = int(width / size);
+  rows = int(height/size);
 
   /*
   https://stackoverflow.com/a/50002641
