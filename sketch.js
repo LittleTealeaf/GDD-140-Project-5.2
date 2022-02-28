@@ -1,7 +1,7 @@
 /// <reference path="./libraries/p5.global-mode.d.ts" />
 
 const randomChance = 0.5;
-const tickRate = 60;
+const tickRate = 30;
 
 var cols = 0;
 var size = 15;
