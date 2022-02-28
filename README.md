@@ -1,6 +1,7 @@
 # Conway's Game of Life in p5.js
 ## GDD-140 Project 5.2
 
+
 [![pages-build-deployment](https://github.com/LittleTealeaf/GDD-140-Project-5.2/actions/workflows/pages/pages-build-deployment/badge.svg)](https://github.com/LittleTealeaf/GDD-140-Project-5.2/actions/workflows/pages/pages-build-deployment) [![CodeQL](https://github.com/LittleTealeaf/GDD-140-Project-5.2/actions/workflows/codeql-analysis.yml/badge.svg)](https://github.com/LittleTealeaf/GDD-140-Project-5.2/actions/workflows/codeql-analysis.yml)
 
 [**View Project**](https://littletealeaf.github.io/GDD-140-Project-5.2/)
