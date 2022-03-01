@@ -5,6 +5,10 @@ const smooth_ui = 0.3;
 const max_ui_delay = 3 * fps;
 const grid_length = 20;
 
+const RUNNING = 0;
+const ADDING = 1;
+const REMOVING = 2;
+
 var showui = 0;
 var ui_delay = 0;
 
