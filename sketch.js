@@ -3,7 +3,7 @@
 /**
  * Initial random chance for each square
  */
-const randomChance = 0.5;
+const density = 0.5;
 /**
  * Tick-rate of the render
  */
@@ -30,7 +30,7 @@ function setup() {
   https://stackoverflow.com/a/50002641
   */
   board = Array.from({ length: rows }, () => 
-    Array.from({length: cols},() => Math.random() < randomChance)
+    Array.from({length: cols},() => Math.random() < density)
   );
 
   frameRate(tickRate);
