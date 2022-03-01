@@ -1,64 +1,73 @@
 /// <reference path="./libraries/p5.global-mode.d.ts" />
 
-/**
- * Initial random chance for each square
- */
-const density = 0.5;
-/**
- * Tick-rate of the render
- */
-const tickRate = 45;
-/**
- * Size, in pixels, of each square
- */
-const size = 15;
+const fps = 60;
+const smooth_ui = 0.3;
+const max_ui_delay = 3 * fps;
+const grid_length = 20;
 
-//number of columns, rows, and the board
-var cols = 0;
-var rows = 0;
-var board;
+var showui = 0;
+var ui_delay = 0;
+
+var board, cols, rows;
+
+var render_offset_x, render_offset_y;
+
+var tickrate = 30;
 
 function setup() {
-  createCanvas(windowWidth-20, windowHeight-20);
+  createCanvas(windowWidth - 20, windowHeight - 20);
+  frameRate(fps);
 
-  //Set board sized based on how much you can fit on the screen
-  cols = int(width / size);
-  rows = int(height/size);
+  cols = int(width / grid_length);
+  rows = int(height / grid_length);
 
-  /*
-  Create the board
-  https://stackoverflow.com/a/50002641
-  */
-  board = Array.from({ length: rows }, () => 
-    Array.from({length: cols},() => Math.random() < density)
+  render_offset_x = (width - cols * grid_length) / 2;
+  render_offset_y = (height - rows * grid_length) / 2;
+
+  board = Array.from({
+      length: rows
+    }, () =>
+    Array.from({
+      length: cols
+    }, () => Math.random() < 0.5)
   );
-
-  frameRate(tickRate);
 }
 
 function draw() {
-  //Create a black background so we only need to render the white tiles
   background(0);
-  //Render the board
+  updateShowUI();
   renderBoard();
-  //Update the board
-  updateBoard();
+  if(frameCount%(fps / tickrate) == 0) {
+    tick();
+  }
+  fill(255);
 }
 
+function updateShowUI() {
+  if (ui_delay > 0) {
+    ui_delay--;
+  }
+  var goal = ui_delay > 0 ? 1 : 0;
+  showui += (goal - showui) * smooth_ui;
+}
+
+function mouseMoved() {
+  ui_delay = max_ui_delay;
+}
+
+
 function renderBoard() {
-  //Set fill to white
   fill('white');
-  //Only render the white tiles, drawing them at the appropriate position
-  for(var x = 0; x < cols; x++) {
-    for(var y = 0; y < rows; y++) {
-      if(board[y][x]) {
-        rect(x * size,y * size,size,size);
+  for (var x = 0; x < cols; x++) {
+    for (var y = 0; y < rows; y++) {
+      if (board[y][x]) {
+        rect(render_offset_x + x * grid_length, render_offset_y + y * grid_length, grid_length, grid_length);
       }
     }
   }
 }
 
-function updateBoard() {
+function tick() {
   //Create a new board of all false values
   newBoard = Array.from({length: rows}, () => Array.from({length: cols},() => false));
 
