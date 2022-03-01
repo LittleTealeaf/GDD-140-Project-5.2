@@ -19,7 +19,7 @@ var rows = 0;
 var board;
 
 function setup() {
-  createCanvas(windowWidth, windowHeight);
+  createCanvas(windowWidth-20, windowHeight-20);
 
   //Set board sized based on how much you can fit on the screen
   cols = int(width / size);
