@@ -3,7 +3,7 @@
 /**
  * Initial random chance for each square
  */
-const randomChance = 0.5;
+const density = 0.5;
 /**
  * Tick-rate of the render
  */
@@ -19,7 +19,7 @@ var rows = 0;
 var board;
 
 function setup() {
-  createCanvas(windowWidth, windowHeight);
+  createCanvas(windowWidth-20, windowHeight-20);
 
   //Set board sized based on how much you can fit on the screen
   cols = int(width / size);
@@ -30,7 +30,7 @@ function setup() {
   https://stackoverflow.com/a/50002641
   */
   board = Array.from({ length: rows }, () => 
-    Array.from({length: cols},() => Math.random() < randomChance)
+    Array.from({length: cols},() => Math.random() < density)
   );
 
   frameRate(tickRate);
