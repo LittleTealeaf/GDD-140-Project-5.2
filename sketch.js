@@ -184,8 +184,6 @@ function draw() {
   updateShowUI();
   //render the board
   renderBoard();
-  //Render buttons
-  renderUI();
   //if state is running, only run a tick on the proper frames
   if(state == RUNNING) {
     if(frameCount%(fps / tickrate) == 0) {
@@ -195,6 +193,9 @@ function draw() {
     //mouse hover for the fancy editing stuff
     renderHover();
   }
+  //Render buttons
+  renderUI();
+  
 }
 
 /**
