@@ -1,64 +1,174 @@
 /// <reference path="./libraries/p5.global-mode.d.ts" />
 
-/**
- * Initial random chance for each square
- */
-const density = 0.5;
-/**
- * Tick-rate of the render
- */
-const tickRate = 45;
-/**
- * Size, in pixels, of each square
- */
-const size = 15;
+class Vector2 {
+  constructor(x,y) {
+    this.x = x;
+    this.y = y;
+  }
+}
 
-//number of columns, rows, and the board
-var cols = 0;
-var rows = 0;
-var board;
+class Button {
+  constructor(startPos, endPos, size, rend) {
+    this.startPos = startPos;
+    this.endPos = endPos;
+    this.size = size;
+    this.rend = rend;
+  }
+
+  render(showui) {
+    var x = this.startPos.x * (1 - showui) + this.endPos.x * showui;
+    var y = this.startPos.y * (1 - showui) + this.endPos.y * showui;
+    this.rend(showui,x,y,this.size.x,this.size.y);
+  }
+
+  contains(showui,mx,my) {
+    var x = this.startPos.x * (1 - showui) + this.endPos.x * showui;
+    var y = this.startPos.y * (1 - showui) + this.endPos.y * showui;
+    return mx > x && mx < x + this.size.x && my > y && my < y + this.size.y;
+  }
+}
+
+const fps = 60;
+const smooth_ui = 0.2;
+const max_ui_delay = 1.5 * fps;
+const grid_length = 20;
+
+const button_height = 50;
+
+const RUNNING = 0;
+const ADDING = 1;
+const REMOVING = 2;
+
+var BUTTON_PLAY, BUTTON_ADD, BUTTON_REMOVE, BUTTON_CLEAR;
+
+var showui = 0;
+var ui_delay = 0;
+
+var state = RUNNING;
+
+var board, cols, rows;
+
+var render_offset_x, render_offset_y;
+
+var tickrate = 30;
 
 function setup() {
-  createCanvas(windowWidth-20, windowHeight-20);
+  createCanvas(windowWidth - 20, windowHeight - 20);
+  frameRate(fps);
 
-  //Set board sized based on how much you can fit on the screen
-  cols = int(width / size);
-  rows = int(height/size);
+  cols = int(width / grid_length);
+  rows = int(height / grid_length);
 
-  /*
-  Create the board
-  https://stackoverflow.com/a/50002641
-  */
-  board = Array.from({ length: rows }, () => 
-    Array.from({length: cols},() => Math.random() < density)
+  render_offset_x = (width - cols * grid_length) / 2;
+  render_offset_y = (height - rows * grid_length) / 2;
+
+  board = Array.from({
+      length: rows
+    }, () =>
+    Array.from({
+      length: cols
+    }, () => Math.random() < 0.5)
   );
+  createButtons();
+}
 
-  frameRate(tickRate);
+function createButtons() {
+  BUTTON_PLAY = new Button(new Vector2(5,-40), new Vector2(5,5), new Vector2(100,50),function(showui,x,y,w,h) {
+    stroke('black');
+    if(state == RUNNING) {
+      fill(100,100,100,255 * showui);
+    } else {
+      fill(255,255,255,255 * showui);
+    }
+    rect(x,y,w,h);
+    var y_top = y + h / 5;
+    var y_bottom = y + h * 4 / 5;
+    var x_left = x + w / 5;
+    var x_right = x + w * 4 / 5;
+    fill(0,255,0,255 * showui);
+    triangle(x_left,y_top,x_left,y_bottom,x_right,y + h / 2);
+  });
+  BUTTON_ADD = new Button(new Vector2(110,-40),new Vector2(110,5), new Vector2(100,50), function(showui,x,y,w,h) {
+    stroke('black');
+    if(state == ADDING) {
+      fill(100,100,100,255 * showui);
+    } else {
+      fill(255,255,255,255 * showui);
+    }
+    rect(x,y,w,h);
+    fill(0,0,0,255*showui);
+    const bar_width = 10;
+    var len = h - bar_width * 2;
+    rect(x + w / 2 - bar_width / 2,y + bar_width,bar_width,len);
+    rect(x + w / 2 - len / 2,y + h / 2 - bar_width / 2, len,bar_width);
+  });
+  BUTTON_REMOVE = new Button(new Vector2(215,-40),new Vector2(215,5), new Vector2(100,50), function(showui,x,y,w,h) {
+    stroke('black');
+    if(state == REMOVING) {
+      fill(100,100,100,255 * showui);
+    } else {
+      fill(255,255,255,255 * showui);
+    }
+    rect(x,y,w,h);
+    fill(0,0,0,255*showui);
+    const bar_width = 10;
+    var len = h - bar_width * 2;
+    rect(x + w / 2 - len / 2,y + h / 2 - bar_width / 2, len,bar_width);
+  });
+  BUTTON_CLEAR = new Button(new Vector2(320,-40),new Vector2(320,5), new Vector2(100,50), function(showui,x,y,w,h) {
+    stroke('black');
+    if(mouseIsPressed && BUTTON_CLEAR.contains(showui,mouseX,mouseY)) {
+      fill(100,100,100,255 * showui);
+    } else {
+      fill(255,255,255,255 * showui);
+    }
+    rect(x,y,w,h);
+    fill(0,0,0,255*showui);
+    var buffer = 10;
+    rect(x + buffer, y + buffer, w - buffer * 2, h - buffer * 2);    
+  });
 }
 
 function draw() {
-  //Create a black background so we only need to render the white tiles
   background(0);
-  //Render the board
+  updateShowUI();
   renderBoard();
-  //Update the board
-  updateBoard();
+  renderUI();
+  if(state == RUNNING) {
+    if(frameCount%(fps / tickrate) == 0) {
+      tick();
+    }
+  } else {
+    renderHover();
+  }
 }
 
+function updateShowUI() {
+  if (ui_delay > 0) {
+    ui_delay--;
+  }
+  var goal = ui_delay > 0 ? 1 : 0;
+  showui += (goal - showui) * smooth_ui;
+}
+
+function mouseMoved() {
+  ui_delay = max_ui_delay;
+}
+
+
 function renderBoard() {
-  //Set fill to white
   fill('white');
-  //Only render the white tiles, drawing them at the appropriate position
-  for(var x = 0; x < cols; x++) {
-    for(var y = 0; y < rows; y++) {
-      if(board[y][x]) {
-        rect(x * size,y * size,size,size);
+  stroke('black');
+  for (var x = 0; x < cols; x++) {
+    for (var y = 0; y < rows; y++) {
+      if (board[y][x]) {
+        rect(render_offset_x + x * grid_length, render_offset_y + y * grid_length, grid_length, grid_length);
       }
     }
   }
 }
 
-function updateBoard() {
+function tick() {
   //Create a new board of all false values
   newBoard = Array.from({length: rows}, () => Array.from({length: cols},() => false));
 
@@ -89,4 +199,60 @@ function updateBoard() {
   }
   //Update board to new board
   board = newBoard;
+}
+
+function renderUI() {
+  BUTTON_PLAY.render(showui);
+  BUTTON_ADD.render(showui);
+  BUTTON_REMOVE.render(showui);
+  BUTTON_CLEAR.render(showui);
+}
+
+function mouseClicked() {
+  if(BUTTON_PLAY.contains(showui,mouseX,mouseY)) {
+    state = RUNNING;
+  } else if(BUTTON_ADD.contains(showui,mouseX,mouseY)) {
+    state = ADDING;
+  } else if(BUTTON_REMOVE.contains(showui,mouseX,mouseY)) {
+    state = REMOVING;
+  } else if(BUTTON_CLEAR.contains(showui,mouseX,mouseY)) {
+    clearBoard();
+  } else {
+    positionClicked();
+  }
+}
+
+function mouseDragged() {
+  mouseClicked();
+}
+
+function clearBoard() {
+  board = Array.from({length: rows}, () => Array.from({length: cols},() => false));
+}
+
+function renderHover() {
+  var x = int((mouseX - render_offset_x) / grid_length);
+  var y = int((mouseY - render_offset_y) / grid_length);
+
+  var transparency = 100 * sin(frameCount / 30) + 155;
+
+  if(state == ADDING) {
+    stroke(0,255,0,transparency);
+    fill(0,255,0,transparency);
+  } else {
+    stroke(255,0,0,transparency);
+    fill(255,0,0,transparency);
+  }
+
+  rect(x * grid_length + render_offset_x,y * grid_length + render_offset_y,grid_length,grid_length);
+}
+
+function positionClicked() {
+  var x = int((mouseX - render_offset_x) / grid_length);
+  var y = int((mouseY - render_offset_y) / grid_length);
+  if(state == ADDING) {
+    board[y][x] = true;
+  } else if(state == REMOVING) {
+    board[y][x] = false;
+  }
 }
