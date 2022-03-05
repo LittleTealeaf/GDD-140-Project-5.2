@@ -1,5 +1,8 @@
 /// <reference path="./libraries/p5.global-mode.d.ts" />
 
+/**
+ * Represents a 2 dimensional vector
+ */
 class Vector2 {
   constructor(x,y) {
     this.x = x;
@@ -7,20 +10,37 @@ class Vector2 {
   }
 }
 
+/**
+ * A button class! Yes! Because button classes are amazing and animation is even better
+ */
 class Button {
   constructor(startPos, endPos, size, rend) {
+    /*
+    These are all amazing vector2s, the rend variable is a function (see the method)
+    */
     this.startPos = startPos;
     this.endPos = endPos;
     this.size = size;
     this.rend = rend;
   }
 
+  /**
+   * Renders with a given % of the slider. Calculates a variable x, y, w, and h based on the current scale
+   * @param {number} showui 
+   */
   render(showui) {
     var x = this.startPos.x * (1 - showui) + this.endPos.x * showui;
     var y = this.startPos.y * (1 - showui) + this.endPos.y * showui;
     this.rend(showui,x,y,this.size.x,this.size.y);
   }
 
+  /**
+   * Checks if the button would contain the mouse at a given location
+   * @param {*} showui 
+   * @param {*} mx 
+   * @param {*} my 
+   * @returns 
+   */
   contains(showui,mx,my) {
     var x = this.startPos.x * (1 - showui) + this.endPos.x * showui;
     var y = this.startPos.y * (1 - showui) + this.endPos.y * showui;
@@ -28,19 +48,38 @@ class Button {
   }
 }
 
+/*
+Constants for days!
+*/
 const fps = 60;
+/*
+How fast the ui should smooth out
+*/
 const smooth_ui = 0.2;
+/*
+Maximum delay in frames
+*/
 const max_ui_delay = 1.5 * fps;
+/*
+How big the grid squares should be
+*/
 const grid_length = 20;
 
-const button_height = 50;
-
+/*
+state constants, like an enum but I didn't feel like investigating enums in javascript, no idea if they even exist
+*/
 const RUNNING = 0;
 const ADDING = 1;
 const REMOVING = 2;
 
+/*
+Button variables, no idea why I made them all caps
+*/
 var BUTTON_PLAY, BUTTON_ADD, BUTTON_REMOVE, BUTTON_CLEAR;
 
+/*
+Variables to do the maths. I'm sorry I don't want to explain them all
+*/
 var showui = 0;
 var ui_delay = 0;
 
@@ -53,26 +92,35 @@ var render_offset_x, render_offset_y;
 var tickrate = 30;
 
 function setup() {
+  //Create a canvas, set the framerate
   createCanvas(windowWidth - 20, windowHeight - 20);
   frameRate(fps);
 
+  //Indicate rows and column counts
   cols = int(width / grid_length);
   rows = int(height / grid_length);
 
+  //calculate offset (so it has an even board around the edge of the screen)
   render_offset_x = (width - cols * grid_length) / 2;
   render_offset_y = (height - rows * grid_length) / 2;
 
-  board = Array.from({
-      length: rows
-    }, () =>
-    Array.from({
-      length: cols
-    }, () => Math.random() < 0.5)
-  );
+  //Create the board...
+  /*
+  Create the board, 
+  used the following to figure out 2d arrays: https://stackoverflow.com/a/50002641
+  */
+  board = Array.from({length: rows}, () => Array.from({length: cols},() => Math.random() < 0.4));
+  
+  //Creates the buttons 
   createButtons();
 }
 
 function createButtons() {
+  /*
+  Oh boy... commenting this... well then
+  Basically, the first 3 vectors are the start (hidden) position, end (visible) position, and size respectively.
+  Then it's a function that renders the button based on the current x, y, h, w, and showui state as well as other states.
+  */
   BUTTON_PLAY = new Button(new Vector2(5,-40), new Vector2(5,5), new Vector2(100,50),function(showui,x,y,w,h) {
     stroke('black');
     if(state == RUNNING) {
@@ -130,19 +178,28 @@ function createButtons() {
 }
 
 function draw() {
+  //draw backgroudn
   background(0);
+  //Update the showui val
   updateShowUI();
+  //render the board
   renderBoard();
+  //Render buttons
   renderUI();
+  //if state is running, only run a tick on the proper frames
   if(state == RUNNING) {
     if(frameCount%(fps / tickrate) == 0) {
       tick();
     }
   } else {
+    //mouse hover for the fancy editing stuff
     renderHover();
   }
 }
 
+/**
+ * gradually decreases ui_delay if it's above 1, and then sets the goal and interpolates showui towards the goal based on whether ui_delay is above 0
+ */
 function updateShowUI() {
   if (ui_delay > 0) {
     ui_delay--;
@@ -151,11 +208,16 @@ function updateShowUI() {
   showui += (goal - showui) * smooth_ui;
 }
 
+/**
+ * If the mouse moves, reset ui_delay!
+ */
 function mouseMoved() {
   ui_delay = max_ui_delay;
 }
 
-
+/**
+ * Renders only the living pieces
+ */
 function renderBoard() {
   fill('white');
   stroke('black');
@@ -168,6 +230,9 @@ function renderBoard() {
   }
 }
 
+/**
+ * Performs a tick by making a new array, computing the changes by each point, and then swapping out the boards
+ */
 function tick() {
   //Create a new board of all false values
   newBoard = Array.from({length: rows}, () => Array.from({length: cols},() => false));
@@ -201,6 +266,9 @@ function tick() {
   board = newBoard;
 }
 
+/**
+ * Renders buttons
+ */
 function renderUI() {
   BUTTON_PLAY.render(showui);
   BUTTON_ADD.render(showui);
@@ -208,6 +276,9 @@ function renderUI() {
   BUTTON_CLEAR.render(showui);
 }
 
+/**
+ * Different functions based on mouse position and state
+ */
 function mouseClicked() {
   if(BUTTON_PLAY.contains(showui,mouseX,mouseY)) {
     state = RUNNING;
@@ -222,14 +293,23 @@ function mouseClicked() {
   }
 }
 
+/**
+ * If the mouse is dragged, act as if it was clicked
+ */
 function mouseDragged() {
   mouseClicked();
 }
 
+/**
+ * Clears the board
+ */
 function clearBoard() {
   board = Array.from({length: rows}, () => Array.from({length: cols},() => false));
 }
 
+/**
+ * Renders the awesome hovering selection piece during editing
+ */
 function renderHover() {
   var x = int((mouseX - render_offset_x) / grid_length);
   var y = int((mouseY - render_offset_y) / grid_length);
@@ -247,6 +327,9 @@ function renderHover() {
   rect(x * grid_length + render_offset_x,y * grid_length + render_offset_y,grid_length,grid_length);
 }
 
+/**
+ * Executes changes based on mouse position
+ */
 function positionClicked() {
   var x = int((mouseX - render_offset_x) / grid_length);
   var y = int((mouseY - render_offset_y) / grid_length);
