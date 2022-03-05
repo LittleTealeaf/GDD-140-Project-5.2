@@ -39,10 +39,12 @@ const RUNNING = 0;
 const ADDING = 1;
 const REMOVING = 2;
 
-var BUTTON_PLAY;
+var BUTTON_PLAY, BUTTON_ADD, BUTTON_REMOVE, BUTTON_CLEAR;
 
 var showui = 0;
 var ui_delay = 0;
+
+var state = RUNNING;
 
 var board, cols, rows;
 
@@ -67,12 +69,63 @@ function setup() {
       length: cols
     }, () => Math.random() < 0.5)
   );
+  createButtons();
+}
 
+function createButtons() {
   BUTTON_PLAY = new Button(new Vector2(5,-40), new Vector2(5,5), new Vector2(100,50),function(showui,x,y,w,h) {
-    fill(255,255,255,255 * showui);
+    stroke('black');
+    if(state == RUNNING) {
+      fill(100,100,100,255 * showui);
+    } else {
+      fill(255,255,255,255 * showui);
+    }
     rect(x,y,w,h);
-    fill(255,0,0,255 * showui);
-    rect(x + 1, y + 1, w - 2, h - 2);
+    var y_top = y + h / 5;
+    var y_bottom = y + h * 4 / 5;
+    var x_left = x + w / 5;
+    var x_right = x + w * 4 / 5;
+    fill(0,255,0,255 * showui);
+    triangle(x_left,y_top,x_left,y_bottom,x_right,y + h / 2);
+  });
+  BUTTON_ADD = new Button(new Vector2(110,-40),new Vector2(110,5), new Vector2(100,50), function(showui,x,y,w,h) {
+    stroke('black');
+    if(state == ADDING) {
+      fill(100,100,100,255 * showui);
+    } else {
+      fill(255,255,255,255 * showui);
+    }
+    rect(x,y,w,h);
+    fill(0,0,0,255*showui);
+    const bar_width = 10;
+    var len = h - bar_width * 2;
+    rect(x + w / 2 - bar_width / 2,y + bar_width,bar_width,len);
+    rect(x + w / 2 - len / 2,y + h / 2 - bar_width / 2, len,bar_width);
+  });
+  BUTTON_REMOVE = new Button(new Vector2(215,-40),new Vector2(215,5), new Vector2(100,50), function(showui,x,y,w,h) {
+    stroke('black');
+    if(state == REMOVING) {
+      fill(100,100,100,255 * showui);
+    } else {
+      fill(255,255,255,255 * showui);
+    }
+    rect(x,y,w,h);
+    fill(0,0,0,255*showui);
+    const bar_width = 10;
+    var len = h - bar_width * 2;
+    rect(x + w / 2 - len / 2,y + h / 2 - bar_width / 2, len,bar_width);
+  });
+  BUTTON_CLEAR = new Button(new Vector2(320,-40),new Vector2(320,5), new Vector2(100,50), function(showui,x,y,w,h) {
+    stroke('black');
+    if(mouseIsPressed && BUTTON_CLEAR.contains(showui,mouseX,mouseY)) {
+      fill(100,100,100,255 * showui);
+    } else {
+      fill(255,255,255,255 * showui);
+    }
+    rect(x,y,w,h);
+    fill(0,0,0,255*showui);
+    var buffer = 10;
+    rect(x + buffer, y + buffer, w - buffer * 2, h - buffer * 2);    
   });
 }
 
@@ -81,10 +134,13 @@ function draw() {
   updateShowUI();
   renderBoard();
   renderUI();
-  if(frameCount%(fps / tickrate) == 0) {
-    tick();
+  if(state == RUNNING) {
+    if(frameCount%(fps / tickrate) == 0) {
+      tick();
+    }
+  } else {
+    renderHover();
   }
-  fill(255);
 }
 
 function updateShowUI() {
@@ -102,6 +158,7 @@ function mouseMoved() {
 
 function renderBoard() {
   fill('white');
+  stroke('black');
   for (var x = 0; x < cols; x++) {
     for (var y = 0; y < rows; y++) {
       if (board[y][x]) {
@@ -145,9 +202,57 @@ function tick() {
 }
 
 function renderUI() {
-  //Draw the start/stop button
-  fill(255,255,255,255 * showui);
-  noStroke();
-  // rect(5,-40 + 50 * showui,100,button_height);
   BUTTON_PLAY.render(showui);
+  BUTTON_ADD.render(showui);
+  BUTTON_REMOVE.render(showui);
+  BUTTON_CLEAR.render(showui);
+}
+
+function mouseClicked() {
+  if(BUTTON_PLAY.contains(showui,mouseX,mouseY)) {
+    state = RUNNING;
+  } else if(BUTTON_ADD.contains(showui,mouseX,mouseY)) {
+    state = ADDING;
+  } else if(BUTTON_REMOVE.contains(showui,mouseX,mouseY)) {
+    state = REMOVING;
+  } else if(BUTTON_CLEAR.contains(showui,mouseX,mouseY)) {
+    clearBoard();
+  } else {
+    positionClicked();
+  }
+}
+
+function mouseDragged() {
+  mouseClicked();
+}
+
+function clearBoard() {
+  board = Array.from({length: rows}, () => Array.from({length: cols},() => false));
+}
+
+function renderHover() {
+  var x = int((mouseX - render_offset_x) / grid_length);
+  var y = int((mouseY - render_offset_y) / grid_length);
+
+  var transparency = 100 * sin(frameCount / 30) + 155;
+
+  if(state == ADDING) {
+    stroke(0,255,0,transparency);
+    fill(0,255,0,transparency);
+  } else {
+    stroke(255,0,0,transparency);
+    fill(255,0,0,transparency);
+  }
+
+  rect(x * grid_length + render_offset_x,y * grid_length + render_offset_y,grid_length,grid_length);
+}
+
+function positionClicked() {
+  var x = int((mouseX - render_offset_x) / grid_length);
+  var y = int((mouseY - render_offset_y) / grid_length);
+  if(state == ADDING) {
+    board[y][x] = true;
+  } else if(state == REMOVING) {
+    board[y][x] = false;
+  }
 }
