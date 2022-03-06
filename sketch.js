@@ -235,36 +235,19 @@ function renderBoard() {
  * Performs a tick by making a new array, computing the changes by each point, and then swapping out the boards
  */
 function tick() {
-  //Create a new board of all false values
-  newBoard = Array.from({length: rows}, () => Array.from({length: cols},() => false));
-
-  //Loop through each location
-  for(var x = 0; x < cols; x++) {
-    for(var y = 0; y < rows; y++) {
-      //Count neighbors
-      var neighborCount = 0;
-      for(var nx = x - 1; nx <= x + 1; nx++) {
-        for(var ny = y - 1; ny <= y + 1; ny++) {
-          /*
-          Basically, count neighbors and make sure not to include itself or try going out of bounds
-          */
-          if(!(ny == y && nx == x) && ny >= 0 && ny < rows && nx >= 0 && nx < cols) {
-            if(board[ny][nx]) {
-              neighborCount++;
-            }
+  board = board.map((row,y) => row.map((e,x) => {
+    var neighbors = 0;
+    for(var nx = x - 1; nx <= x + 1; nx++) {
+      for(var ny = y - 1; ny <= y + 1; ny++) {
+        if(!(ny == y && nx == x) && ny >= 0 && ny < rows && nx >= 0 && nx < cols) {
+          if(board[ny][nx]) {
+            neighbors++;
           }
         }
       }
-      //Values depending on the current state, as per rules of Conway's Game of Life
-      if(board[y][x]) {
-        newBoard[y][x] = neighborCount >= 2 && neighborCount <= 3;
-      } else {
-        newBoard[y][x] = neighborCount == 3;
-      }
     }
-  }
-  //Update board to new board
-  board = newBoard;
+    return neighbors == 3 || (e && neighbors == 2);
+  }));
 }
 
 /**
