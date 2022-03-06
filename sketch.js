@@ -222,13 +222,11 @@ function mouseMoved() {
 function renderBoard() {
   fill('white');
   stroke('black');
-  for (var x = 0; x < cols; x++) {
-    for (var y = 0; y < rows; y++) {
-      if (board[y][x]) {
-        rect(render_offset_x + x * grid_length, render_offset_y + y * grid_length, grid_length, grid_length);
-      }
+  board.forEach((row,y) => row.forEach((e,x) => {
+    if(e) {
+      rect(render_offset_x + x * grid_length, render_offset_y + y * grid_length, grid_length, grid_length);
     }
-  }
+  }));
 }
 
 /**
