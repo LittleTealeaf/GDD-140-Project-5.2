@@ -121,7 +121,7 @@ function createButtons() {
   Basically, the first 3 vectors are the start (hidden) position, end (visible) position, and size respectively.
   Then it's a function that renders the button based on the current x, y, h, w, and showui state as well as other states.
   */
-  BUTTON_PLAY = new Button(new Vector2(5,-50), new Vector2(5,5), new Vector2(100,50),function(showui,x,y,w,h) {
+  BUTTON_PLAY = new Button(new Vector2(5,-50), new Vector2(5,5), new Vector2(100,50),(showui,x,y,w,h) => {
     stroke('black');
     if(state == RUNNING) {
       fill(100,100,100,255 * showui);
@@ -136,7 +136,7 @@ function createButtons() {
     fill(0,255,0,255 * showui);
     triangle(x_left,y_top,x_left,y_bottom,x_right,y + h / 2);
   });
-  BUTTON_ADD = new Button(new Vector2(110,-50),new Vector2(110,5), new Vector2(100,50), function(showui,x,y,w,h) {
+  BUTTON_ADD = new Button(new Vector2(110,-50),new Vector2(110,5), new Vector2(100,50), (showui,x,y,w,h) => {
     stroke('black');
     if(state == ADDING) {
       fill(100,100,100,255 * showui);
@@ -150,7 +150,7 @@ function createButtons() {
     rect(x + w / 2 - bar_width / 2,y + bar_width,bar_width,len);
     rect(x + w / 2 - len / 2,y + h / 2 - bar_width / 2, len,bar_width);
   });
-  BUTTON_REMOVE = new Button(new Vector2(215,-50),new Vector2(215,5), new Vector2(100,50), function(showui,x,y,w,h) {
+  BUTTON_REMOVE = new Button(new Vector2(215,-50),new Vector2(215,5), new Vector2(100,50), (showui,x,y,w,h) => {
     stroke('black');
     if(state == REMOVING) {
       fill(100,100,100,255 * showui);
@@ -163,7 +163,7 @@ function createButtons() {
     var len = h - bar_width * 2;
     rect(x + w / 2 - len / 2,y + h / 2 - bar_width / 2, len,bar_width);
   });
-  BUTTON_CLEAR = new Button(new Vector2(320,-50),new Vector2(320,5), new Vector2(100,50), function(showui,x,y,w,h) {
+  BUTTON_CLEAR = new Button(new Vector2(320,-50),new Vector2(320,5), new Vector2(100,50), (showui,x,y,w,h) => {
     stroke('black');
     if(mouseIsPressed && BUTTON_CLEAR.contains(showui,mouseX,mouseY)) {
       fill(100,100,100,255 * showui);
