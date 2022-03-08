@@ -168,7 +168,7 @@ function createButtons() {
     }
     rect(x,y,w,h);
     fill(0,0,0,255*showui);
-    var buffer = 10;
+    var buffer = 5;
     rect(x + buffer, y + buffer, w - buffer * 2, h - buffer * 2);    
   });
   BUTTON_RANDOM = new Button(new Vector2(425,-50), new Vector2(425,5), new Vector2(100,50), (showui,x,y,w,h) => {
