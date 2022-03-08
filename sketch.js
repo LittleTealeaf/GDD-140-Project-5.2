@@ -320,7 +320,8 @@ function renderHover() {
   var x = int((mouseX - render_offset_x) / grid_length);
   var y = int((mouseY - render_offset_y) / grid_length);
 
-  var transparency = 100 * sin(frameCount / 30) + 155;
+  const range = 75;
+  var transparency = range * sin(frameCount / 25) + 255 - range;
 
   if(state == ADDING) {
     stroke(0,255,0,transparency);
