@@ -75,7 +75,7 @@ const REMOVING = 2;
 /*
 Button variables, no idea why I made them all caps
 */
-var BUTTON_PLAY, BUTTON_ADD, BUTTON_REMOVE, BUTTON_CLEAR;
+var BUTTON_PLAY, BUTTON_ADD, BUTTON_REMOVE, BUTTON_CLEAR, BUTTON_RANDOM;
 
 /*
 Variables to do the maths. I'm sorry I don't want to explain them all
@@ -105,10 +105,6 @@ function setup() {
   render_offset_y = (height - rows * grid_length) / 2;
 
   //Create the board...
-  /*
-  Create the board, 
-  used the following to figure out 2d arrays: https://stackoverflow.com/a/50002641
-  */
   board = Array.from({length: rows}, () => Array.from({length: cols},() => Math.random() < 0.4));
   
   //Creates the buttons 
@@ -174,6 +170,27 @@ function createButtons() {
     fill(0,0,0,255*showui);
     var buffer = 10;
     rect(x + buffer, y + buffer, w - buffer * 2, h - buffer * 2);    
+  });
+  BUTTON_RANDOM = new Button(new Vector2(425,-50), new Vector2(425,5), new Vector2(100,50), (showui,x,y,w,h) => {
+    stroke('black');
+    if(mouseIsPressed && BUTTON_RANDOM.contains(showui,mouseX,mouseY)) {
+      fill(100,100,100,255 * showui);
+    } else {
+      fill(255,255,255,255 * showui);
+    }    
+    rect(x,y,w,h);
+    //Create a random grid 
+    randomSeed(frameCount / 10);
+    noStroke();
+    var size = 2;
+    fill('black');
+    for(var cx = x; cx < x + w; cx += size) {
+      for(var cy = y; cy < y + h; cy += size) {
+        if(random() > 0.2) {
+          rect(cx,cy,size,size);
+        }
+      }
+    }
   });
 }
 
@@ -256,6 +273,7 @@ function renderUI() {
   BUTTON_ADD.render(showui);
   BUTTON_REMOVE.render(showui);
   BUTTON_CLEAR.render(showui);
+  BUTTON_RANDOM.render(showui);
 }
 
 /**
@@ -270,7 +288,9 @@ function mouseClicked() {
     state = REMOVING;
   } else if(BUTTON_CLEAR.contains(showui,mouseX,mouseY)) {
     clearBoard();
-  } else {
+  } else if(BUTTON_RANDOM.contains(showui,mouseX,mouseY)) {
+    randomizeBoard();
+  }else {
     positionClicked();
   }
 }
@@ -320,4 +340,12 @@ function positionClicked() {
   } else if(state == REMOVING) {
     board[y][x] = false;
   }
+}
+
+function randomizeBoard() {
+/*
+  Create the board, 
+  used the following to figure out 2d arrays: https://stackoverflow.com/a/50002641
+  */
+  board = board.map((r) => r.map(e => Math.random() < 0.5));
 }
