@@ -105,6 +105,10 @@ function setup() {
   render_offset_y = (height - rows * grid_length) / 2;
 
   //Create the board...
+  /*
+  Create the board, 
+  used the following to figure out 2d arrays: https://stackoverflow.com/a/50002641
+  */
   board = Array.from({length: rows}, () => Array.from({length: cols},() => Math.random() < 0.4));
   
   //Creates the buttons 
@@ -343,9 +347,6 @@ function positionClicked() {
 }
 
 function randomizeBoard() {
-/*
-  Create the board, 
-  used the following to figure out 2d arrays: https://stackoverflow.com/a/50002641
-  */
+
   board = board.map((r) => r.map(e => Math.random() < 0.5));
 }
